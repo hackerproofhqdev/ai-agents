@@ -1,7 +1,7 @@
-from langgraph.graph import StateGraph  , START , END , add_messages
+from langgraph.graph import StateGraph  , START , END , add_messages , MessagesState
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel , Field
-from typing import TypedDict , Annotated
+
 
 llm = ChatOpenAI(model="gpt-4o-mini")
 
@@ -39,14 +39,13 @@ class Resume(BaseModel):
     education_info : list[Education]
     contact_info : Contact
 
-class MessagesState(TypedDict):
-    messages : Annotated[list , add_messages]
+class State(MessagesState):
     resume : Resume
 
 
 llm_with_json = llm.with_structured_output(Resume)
 
-builder = StateGraph(MessagesState)
+builder = StateGraph(State)
 
 
 system_message = (
@@ -55,7 +54,7 @@ system_message = (
 )
 
 
-def llm_node(state:MessagesState):
+def llm_node(state:State):
     
     messages = [system_message] + state["messages"]
     return {"messages":messages , "resume":llm_with_json.invoke(messages)}
