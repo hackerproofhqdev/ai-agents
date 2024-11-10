@@ -1,0 +1,11 @@
+{
+    "dockerfile_lines": [],
+    "graphs": {
+      "job_analyzer_agent": "./job_analyzer_agent.py:graph",
+      "resume_agent": "./resume_agent.py:graph"
+    },
+    "python_version": "3.12",
+    "dependencies": [
+      "."
+    ]
+  }
