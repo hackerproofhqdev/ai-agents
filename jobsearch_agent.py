@@ -61,7 +61,7 @@ tools = [tavily_client]
 
 
 def query_llm(state: State):
-    llm = ChatOpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY)
+    llm = ChatOpenAI(model="gpt-4o-mini")
     system_message = SystemMessage(
         content="You are an AI agent that will search every Jobs According to Query make sure to search most on linkdien and indeed"
     )
@@ -71,7 +71,7 @@ def query_llm(state: State):
 
 
 def format_llm(state: State):
-    llm = ChatOpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY)
+    llm = ChatOpenAI(model="gpt-4o-mini")
     llm_with_structued_output = llm.with_structured_output(Jobs)
     messages = [
         SystemMessage(
