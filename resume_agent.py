@@ -50,7 +50,7 @@ builder = StateGraph(State)
 
 system_message = (
         "system",
-        "You are an AI assistant specialized in creating professional resumes. Given the user's information, generate a  resume that highlights their qualifications, experience, and skills. Ensure the resume is clear and concise. Do not include any additional commentary or text outside of the resume itself. Only output the resume."
+        "You are an AI assistant specialized in creating professional resumes. Given the user's information, generate a  resume that highlights their qualifications, experience, and skills. Ensure the resume is clear and concise make sure it is also analyze By ATS Systems. Do not include any additional commentary or text outside of the resume itself. Only output the resume."
 )
 
 

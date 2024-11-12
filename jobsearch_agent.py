@@ -14,12 +14,12 @@ class Job(BaseModel):
     company_name: str = Field(description="Company Name")
     role: str = Field(description="Role They Are Looking For")
     working_exp: str = Field(description="Working Experience Required")
-    type: Literal["onsite", "remote", "hybrid"] = Field(description="Job Type")
+    type: str = Field(description="Job Type")
     desc: str = Field(description="Job Description")
     url_to_apply: str = Field(description="URL to Apply")
     # Additional fields
     location: Optional[str] = Field(default=None, description="Job Location")
-    salary_range: Optional[str] = Field(
+    salary_range: Optional[str] = Field( 
         default=None, description="Salary Range Offered"
     )
     application_deadline: Optional[str] = Field(
