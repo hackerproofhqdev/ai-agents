@@ -1,3 +1,4 @@
+from typing import Optional
 from langgraph.graph import StateGraph  , START , END , add_messages , MessagesState
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel , Field
@@ -13,7 +14,9 @@ class Skills(BaseModel):
 
 class PastExperience(BaseModel):
     """PastExperience Model"""
-    role : str = Field(description="Role Work At")
+    postion : str = Field(description="Role Work At")
+    performed_for : Optional[str] = Field(default=None,description="Name Of the Company or Personal")
+    roles : Optional[list[str]] = Field(default=None , description="Detail Roles and very things performed") 
     start_date : str = Field(description="Date Of Started")
     end_date : str = Field(description="Date of End")
 
@@ -38,6 +41,7 @@ class Resume(BaseModel):
     past_experince :  list [PastExperience] = Field(description="List Of past_skills")
     education_info : list[Education]
     contact_info : Contact
+
 
 class State(MessagesState):
     resume : Resume
