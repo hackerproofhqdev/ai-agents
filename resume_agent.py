@@ -8,68 +8,68 @@ llm = ChatOpenAI(model="gpt-4o-mini")
 
 
 class Skills(BaseModel):
-    """Skilles Model"""
+    """Skills Model"""
 
     skill_name: str = Field(description="Skill Name")
-    description: str = Field(description="Skill description")
+    description: str = Field(description="Skill Description")
 
 
 class PastExperience(BaseModel):
     """PastExperience Model"""
 
-    postion: str = Field(description="Role Work At")
+    position: str = Field(description="Role Worked At")
     performed_for: Optional[str] = Field(
-        default=None, description="Name Of the Company or Personal"
+        default=None, description="Name of the Company or Personal"
     )
     roles: Optional[list[str]] = Field(
-        default=None, description="Detail Roles and very things performed"
+        default=None, description="Detailed roles and various tasks performed"
     )
-    start_date: str = Field(description="Date Of Started")
-    end_date: str = Field(description="Date of End")
+    start_date: str = Field(description="Start Date")
+    end_date: str = Field(description="End Date")
 
 
 class Contact(BaseModel):
     """Contact Info Model"""
 
-    phone_number: str = Field(description="Phone Number of resumer")
+    phone_number: str = Field(description="Phone Number of Resumer")
     email: str = Field(description="Email of Resumer")
 
 
 class Education(BaseModel):
     """Education Model"""
 
-    degree: str = Field(description="Degress Details")
-    completed_at: str = Field(description="Complete Date")
-    platform_name: str = Field(description="Name Of Platform")
+    degree: str = Field(description="Degree Details")
+    completed_at: str = Field(description="Completion Date")
+    platform_name: str = Field(description="Name of Platform")
 
 
 class Certification(BaseModel):
     """Certification Model"""
 
-    name: str = Field(description="Name Of the Certification")
-    issued_at: Optional[str] = Field(description="The Date Of Issue")
+    name: str = Field(description="Name of the Certification")
+    issued_date: Optional[str] = Field(description="Date of Issue")
 
 
-class Awards(BaseModel):
+class Award(BaseModel):
     """Award Model"""
 
-    award: str = Field(description="Award Name")
+    title: str = Field(description="Award Title")
 
 
 class Resume(BaseModel):
     """Resume Model"""
 
-    name: str = Field(description="Name of The Resumer")
+    name: str = Field(description="Name of the Resumer")
     role: str = Field(description="Role of the Resumer")
-    about: str = Field(description="Person About")
+    about: str = Field(description="About the Person")
     skills: list[Skills] = Field(description="List of Skills")
-    past_experince: Optional[list[PastExperience]] = Field(
-        description="List Of Experience Including Projects"
+    past_experience: Optional[list[PastExperience]] = Field(
+        default=None, description="List of Experiences Including Projects"
     )
-    education_info: Optional[list[Education]] = Field(description="Education Info")
+    education_info: Optional[list[Education]] = Field(default=None, description="Education Information")
     contact_info: Contact = Field(description="Contact Information")
-    certifications: Optional[list[Certification]] = Field(description="Certifications")
-    awards: Optional[list[Awards]] = Field(description="List Of Awards")
+    certifications: Optional[list[Certification]] = Field(default=None, description="Certifications")
+    awards: Optional[list[Award]] = Field(default=None, description="List of Awards")
 
 
 class State(MessagesState):
