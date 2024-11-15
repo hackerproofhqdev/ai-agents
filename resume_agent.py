@@ -78,6 +78,7 @@ class Resume(BaseModel):
 
 class State(MessagesState):
     resume: Resume
+    experience:str
 
 
 llm_with_json = llm.with_structured_output(Resume)
