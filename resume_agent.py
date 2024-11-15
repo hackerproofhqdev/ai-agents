@@ -140,10 +140,13 @@ Generate an updated resume that incorporates all the above requirements. The res
 
     return {"messages": messages, "resume": llm_with_json.invoke(messages)}
 
+builder.add_node("llm_node" , llm_node)
+builder.add_node("experince_node" , experience_genrater_node)
 
-builder.add_node("llm_node", llm_node)
+builder.add_edge(START , "experince_node")
+builder.add_edge("experince_node" , "llm_node")
+builder.add_edge("llm_node" , END)
 
-builder.add_edge(START, "llm_node")
-builder.add_edge("llm_node", END)
+graph = builder.compile()
 
 graph = builder.compile()
