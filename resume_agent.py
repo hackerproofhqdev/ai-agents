@@ -99,7 +99,7 @@ def experience_genrater_node(state: MessagesState):
     return {"experience": response.content}
 
 
-def llm_node(state: MessagesState):
+def llm_node(state: State):
     system_message = (
         "system",
         """ 
