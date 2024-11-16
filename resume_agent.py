@@ -16,16 +16,12 @@ class Skills(BaseModel):
 
 class PastExperience(BaseModel):
     """PastExperience Model"""
+    postion : str  = Field(description="Role Work At")
+    performed_for : Optional[str] = Field(default=None,description="Name Of the Company or Personal")
+    roles : Optional[list[str]] = Field(default=None , description="Detail Roles and very things performed") 
+    start_date : str |None = Field(default=None,description="Date Of Started")
+    end_date : str|None = Field(default=None,description="Date of End")
 
-    position: str = Field(description="Role Worked At")
-    performed_for: Optional[str] = Field(
-        default=None, description="Name of the Company or Personal"
-    )
-    roles: Optional[List[str]] = Field(
-        default=None, description="Detailed Roles and Tasks Performed"
-    )
-    start_date: str = Field(description="Start Date")
-    end_date: str = Field(description="End Date")
 
 
 class Contact(BaseModel):
@@ -76,9 +72,12 @@ class Resume(BaseModel):
     awards: Optional[List[Awards]] = Field(description="List of Awards")
 
 
+class ListExperience(BaseModel):
+    experiences : list[PastExperience]
+
 class State(MessagesState):
     resume: Resume
-    experience:str
+    experience:list[PastExperience]
 
 
 llm_with_json = llm.with_structured_output(Resume)
@@ -86,18 +85,18 @@ llm_with_json = llm.with_structured_output(Resume)
 builder = StateGraph(State)
 
 
-def experience_genrater_node(state: MessagesState):
+def experience_genrater_node(state: State):
     system_messages = """
         You are the AI Agent that Generate Experience According to Job Title and Job Description"
         'Use valid company names. If a specific company name cannot be determined, use "Personal Projects" or a similar valid designation. Also Analyze according to resume Target Date and Add it',
-        "Genrate 4 to 5 Experience According to Job Title
+        "Genrate 10 Experience According to Job Title
         """
 
     system_messages = ("system", system_messages)
     messages = [system_messages] + state["messages"]
-    response = llm.invoke(messages)
-    return {"experience": response.content}
-
+    structured_llm = llm.with_structured_output(ListExperience)
+    response = structured_llm.invoke(messages)
+    return {"experience": response.experiences}
 
 def llm_node(state: State):
     system_message = (
