@@ -3,7 +3,6 @@ from langgraph.graph import StateGraph, START, END, MessagesState
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field, validator
 
-
 llm = ChatOpenAI(model="gpt-4o-mini")
 
 
@@ -16,12 +15,16 @@ class Skills(BaseModel):
 
 class PastExperience(BaseModel):
     """PastExperience Model"""
-    postion : str  = Field(description="Role Work At")
-    performed_for : Optional[str] = Field(default=None,description="Name Of the Company or Personal")
-    roles : Optional[list[str]] = Field(default=None , description="Detail Roles and very things performed") 
-    start_date : str |None = Field(default=None,description="Date Of Started")
-    end_date : str|None = Field(default=None,description="Date of End")
 
+    position: str = Field(description="Role Work At")
+    performed_for: Optional[str] = Field(
+        default=None, description="Name Of the Company or Personal"
+    )
+    roles: Optional[List[str]] = Field(
+        default=None, description="Detail Roles and everything performed"
+    )
+    start_date: Optional[str] = Field(default=None, description="Date Of Started")
+    end_date: Optional[str] = Field(default=None, description="Date of End")
 
 
 class Contact(BaseModel):
@@ -64,7 +67,7 @@ class Resume(BaseModel):
     about: str = Field(description="Person About")
     skills: List[Skills] = Field(description="List of Skills")
     past_experience: Optional[List[PastExperience]] = Field(
-        description="List of Experience Including Projects"
+        default_factory=list, description="List of Experience Including Projects"
     )
     education_info: Optional[List[Education]] = Field(description="Education Info")
     contact_info: Contact = Field(description="Contact Information")
@@ -73,11 +76,12 @@ class Resume(BaseModel):
 
 
 class ListExperience(BaseModel):
-    experiences : list[PastExperience]
+    experiences: List[PastExperience]
+
 
 class State(MessagesState):
     resume: Resume
-    experience:list[PastExperience]
+    experience: List[PastExperience]
 
 
 llm_with_json = llm.with_structured_output(Resume)
@@ -85,23 +89,21 @@ llm_with_json = llm.with_structured_output(Resume)
 builder = StateGraph(State)
 
 
-def experience_genrater_node(state: State):
+def experience_generator_node(state: State):
     system_messages = """
-        You are the AI Agent that Generate Experience According to Job Title and Job Description"
-        'Use valid company names. If a specific company name cannot be determined, use "Personal Projects" or a similar valid designation. Also Analyze according to resume Target Date and Add it',
-        "Genrate 10 Experience According to Job Title
-        """
-
-    system_messages = ("system", system_messages)
-    messages = [system_messages] + state["messages"]
+    You are an AI Agent that generates experience according to Job Title and Job Description.
+    Use valid company names. If a specific company name cannot be determined, use "Personal Projects" or a similar valid designation.
+    Also, analyze according to resume target date and add it.
+    Generate 10 experiences according to the Job Title.
+    """
+    system_message = ("system", system_messages)
+    messages = [system_message] + state["messages"]
     structured_llm = llm.with_structured_output(ListExperience)
     response = structured_llm.invoke(messages)
-    return {"experience": response.experiences}
+    return {"experience": response.experiences} 
 
 
-
-
-def llm_node(state: MessagesState):
+def llm_node(state: State):
     system_message = (
         "system",
         """ 
@@ -137,19 +139,20 @@ Generate an updated resume that incorporates all the above requirements. The res
     )
 
     llm_with_json = llm.with_structured_output(Resume)
-    experience_message = ("user", f"Please add the following new experiences to the resume:\n{state['experience']}")
+    experience_message = (
+        "user",
+        f"Please add the following new experiences to the resume:\n{state['experience']}",
+    )
     messages = [system_message] + state["messages"] + [experience_message]
+    updated_resume = llm_with_json.invoke(messages)
+    return {"messages": messages, "resume": updated_resume}
 
-    return {"messages": messages, "resume": llm_with_json.invoke(messages)}
 
+builder.add_node("llm_node", llm_node)
+builder.add_node("experience_node", experience_generator_node)
 
-builder.add_node("llm_node" , llm_node)
-builder.add_node("experince_node" , experience_genrater_node)
-
-builder.add_edge(START , "experince_node")
-builder.add_edge("experince_node" , "llm_node")
-builder.add_edge("llm_node" , END)
-
-graph = builder.compile()
+builder.add_edge(START, "experience_node")
+builder.add_edge("experience_node", "llm_node")
+builder.add_edge("llm_node", END)
 
 graph = builder.compile()
