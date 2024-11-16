@@ -98,7 +98,7 @@ def experience_genrater_node(state: State):
     response = structured_llm.invoke(messages)
     return {"experience": response.experiences}
 
-def llm_node(state: State):
+def llm_node(state: MessagesState):
     system_message = (
         "system",
         """ 
@@ -110,14 +110,13 @@ You are an AI assistant specialized in creating and updating professional resume
 
 3. **Update the "About" Section**: Modify the "About" section to align with the Job Title and Job Description, highlighting relevant strengths and experiences.
 
-4. **Add Relevant Experiences**:
-   - Add new experiences that are pertinent to the Job Title and Job Description.
-   - Use valid company names. If a specific company name cannot be determined, use "Personal Projects" or a similar valid designation.
-   - Ensure that existing experiences are not omitted or hidden.
-
-5. **Enhance Skills Section**:
+4. **Enhance Skills Section**:
    - Add new skills that are relevant to the Job Title and Job Description.
    - Retain the user's existing skills without omission.
+
+5. **Update Experience Section**:
+   - **Retain all existing experiences in the resume without omission or modification**.
+   - **Add the new experiences provided, integrating them appropriately within the experience section**.
 
 6. **Optimize for Applicant Tracking Systems (ATS)**:
    - Integrate keywords from the Job Title and Job Description throughout the resume to improve ATS compatibility.
@@ -125,19 +124,21 @@ You are an AI assistant specialized in creating and updating professional resume
 
 7. **Maintain Clarity and Professionalism**:
    - Ensure the resume remains clear, concise, and professional.
+   - Use standard resume formatting and structure.
    - Avoid adding any commentary or text outside of the resume content.
 
 **Output**:
-Generate an updated resume that incorporates all the above requirements. The resume should be well-structured, highlighting the user's qualifications, updated "About" section, added experiences and skills relevant to the Job Title and Job Description, and optimized with appropriate keywords for ATS tracking.
+Generate an updated resume that incorporates all the above requirements. The resume should be well-structured, highlighting the user's qualifications, updated "About" section, existing experiences, added new experiences, and added skills relevant to the Job Title and Job Description, optimized with appropriate keywords for ATS tracking.
 
 """,
     )
 
     llm_with_json = llm.with_structured_output(Resume)
-    experience_message = ("user", f"Also Add This Experience {state["experience"]}")
+    experience_message = ("user", f"Please add the following new experiences to the resume:\n{state['experience']}")
     messages = [system_message] + state["messages"] + [experience_message]
 
     return {"messages": messages, "resume": llm_with_json.invoke(messages)}
+
 
 builder.add_node("llm_node" , llm_node)
 builder.add_node("experince_node" , experience_genrater_node)
