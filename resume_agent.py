@@ -92,15 +92,16 @@ builder = StateGraph(State)
 def experience_generator_node(state: State):
     system_messages = """
     You are an AI Agent that generates experience according to Job Title and Job Description.
-    Use valid company names. If a specific company name cannot be determined, use "Personal Projects" or a similar valid designation.
-    Also, analyze according to resume target date and add it.
-    Generate 10 experiences according to the Job Title.
+    Use valid company names. Avoid using "Personal Projects" or any other similar placeholders. Always prefer to generate a valid company name wherever applicable.
+    If a specific company name cannot be determined, use a well-known company, a relevant industry leader, or a suitable designation as needed. 
+    Also, analyze the resume's target date and add experiences based on it.
+    Generate 10 experiences based on the Job Title, with valid company names included in each experience.
     """
     system_message = ("system", system_messages)
     messages = [system_message] + state["messages"]
     structured_llm = llm.with_structured_output(ListExperience)
     response = structured_llm.invoke(messages)
-    return {"experience": response.experiences} 
+    return {"experience": response.experiences}
 
 
 def llm_node(state: State):
