@@ -98,6 +98,9 @@ def experience_genrater_node(state: State):
     response = structured_llm.invoke(messages)
     return {"experience": response.experiences}
 
+
+
+
 def llm_node(state: MessagesState):
     system_message = (
         "system",
