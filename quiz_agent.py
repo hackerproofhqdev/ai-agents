@@ -1,51 +1,83 @@
-from typing import TypedDict
+from langgraph.graph import MessagesState , START , END , StateGraph
 from langchain_openai import ChatOpenAI
-from langgraph.graph import StateGraph, START, END
-from langchain_core.pydantic_v1 import BaseModel, Field
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.pydantic_v1 import BaseModel , Field
+from langchain_core.messages import HumanMessage , SystemMessage
 
-
-class Question(BaseModel):
+class QuestionModel(BaseModel):
     """Question Model"""
+    question : str = Field(description="Quiz Question")
+    answer : str = Field(description="Correct answer of the question")
+    options : list[str] = Field(description="Options to choose from")
 
-    question: str = Field(description="Question to be answered")
-    answer: str = Field(description="Correct answer")
-    options: list[str] = Field(description="Options to choose from")
-
-
-class Quiz(BaseModel):
+class QuizModel(BaseModel):
     """Quiz Model"""
-
-    questions: list[Question] = Field(description="List of questions")
-
-
-class State(TypedDict):
-    """State Model"""
-
-    quiz: Quiz
-    job_description: str
+    questions : list[QuestionModel] = Field(description="Quiz Questions")
 
 
-def llm_node(state: State):
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.5)
-    llm_json = llm.with_structured_output(Quiz)
-    messages = [
-        (
-            "system",
-            "You Are the Interviwer .  You have to  Make  Quiz From for User according to Job Description",
-        ),
-        ("human", "Here is the Job Desc : \n {job_description}"),
-    ]
-    messages_template = ChatPromptTemplate.from_messages(messages)
-    chain = messages_template | llm_json
-    quiz = chain.invoke({"job_description": state["job_description"]})
-    return {"quiz": quiz}
 
+class State(MessagesState):
+  quiz : list[QuestionModel]
+  past_question_summary:str
+
+
+
+llm = ChatOpenAI(model_name="gpt-4o-mini" , temperature=0.5)
+
+structured_llm = llm.with_structured_output(QuizModel)
 
 builder = StateGraph(State)
 
-builder.add_node("llm_node", llm_node)
-builder.add_edge(START, "llm_node")
-builder.add_edge("llm_node", END)
 
-graph = builder.compile()
+
+def generate_summary_of_quiz(state: State):
+    summary = state.get("past_question_summary", "")
+    quiz = state.get("quiz", [])
+    if not summary:
+        human_message = HumanMessage(
+            content=f"Generate a summary for each of the following questions in the format:\n\n"
+                    f"**Question [number]**:\n\n"
+                    f"Question: [question]\n"
+                    f"Answer: [correct answer]\n"
+                    f"Options:\n"
+                    f"1 - Option 1\n"
+                    f"2 - Option 2\n"
+                    f"3 - Option 3\n"
+                    f"4 - Option 4\n\n"
+                    f"Here are the questions:\n{quiz}"
+            )
+        response = llm.invoke([human_message])
+        summary = response.content
+    else:
+        human_message = HumanMessage(
+            content=f"Here is the existing summary:\n\n{summary}\n\n"
+                    f"Extend this summary by adding the following questions in the same format. "
+                    f"Ensure that the final summary includes both the previous and new questions:\n\n{quiz}"
+            )
+        response = llm.invoke([human_message])
+        summary = response.content
+    return {"past_question_summary": summary}
+
+
+
+
+
+def generate_quiz(state:State):
+  summary = state.get("past_question_summary" , "")
+  system_prompt = f"Generate Unique and Techinal and Logical Quiz According to the job title and job description . Make Sure Donot repeate the Question"
+  system_message = SystemMessage(content=system_prompt)
+  if not summary: 
+    response  = structured_llm.invoke([system_message] + state.get("messages"))
+  
+  else:
+    human_message = HumanMessage(content=f"Here is the summary of perivous questions : {summary}")
+    response  = structured_llm.invoke([system_message , human_message] + state.get("messages"))
+  return {"quiz":response.questions}
+
+
+
+builder.add_node("summary_agent" , generate_summary_of_quiz)
+builder.add_node("quiz_agent" , generate_quiz)
+
+builder.add_edge(START , "quiz_agent")
+builder.add_edge("quiz_agent","summary_agent")
+builder.add_edge("summary_agent" , END)
