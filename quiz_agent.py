@@ -21,7 +21,7 @@ class State(MessagesState):
 
 
 
-llm = ChatOpenAI(model_name="gpt-4o-mini" , temperature=0.5)
+llm = ChatOpenAI(model_name="gpt-4o-mini" , temperature=0.5) # type: ignore
 
 structured_llm = llm.with_structured_output(QuizModel)
 
@@ -81,3 +81,6 @@ builder.add_node("quiz_agent" , generate_quiz)
 builder.add_edge(START , "quiz_agent")
 builder.add_edge("quiz_agent","summary_agent")
 builder.add_edge("summary_agent" , END)
+
+
+graph = builder.compile()
