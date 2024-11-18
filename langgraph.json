@@ -4,7 +4,8 @@
       "resume_analyzer_agent": "./resume_analyzer_agent.py:graph",
       "resume_agent": "./resume_agent.py:graph",
       "job_search_agent":"./jobsearch_agent.py:graph",
-      "quiz_agent":"./quiz_agent.py:graph"
+      "quiz_agent":"./quiz_agent.py:graph",
+      "coverletteragent":"./coverletteragent.py:graph"
     },
     "python_version": "3.12",
     "dependencies": [

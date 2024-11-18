@@ -46,7 +46,7 @@ def generate_summary_of_quiz(state: State):
                     f"Here are the questions:\n{quiz}"
             )
         response = llm.invoke([human_message])
-        summary = response.content
+        summary = response.content # type: ignore
     else:
         human_message = HumanMessage(
             content=f"Here is the existing summary:\n\n{summary}\n\n"
@@ -54,7 +54,7 @@ def generate_summary_of_quiz(state: State):
                     f"Ensure that the final summary includes both the previous and new questions:\n\n{quiz}"
             )
         response = llm.invoke([human_message])
-        summary = response.content
+        summary = response.content # type: ignore
     return {"past_question_summary": summary}
 
 
@@ -66,12 +66,12 @@ def generate_quiz(state:State):
   system_prompt = f"Generate Unique and Techinal and Logical Quiz According to the job title and job description . Make Sure Donot repeate the Question"
   system_message = SystemMessage(content=system_prompt)
   if not summary: 
-    response  = structured_llm.invoke([system_message] + state.get("messages"))
+    response  = structured_llm.invoke([system_message] + state.get("messages")) # type: ignore
   
   else:
     human_message = HumanMessage(content=f"Here is the summary of perivous questions : {summary}")
-    response  = structured_llm.invoke([system_message , human_message] + state.get("messages"))
-  return {"quiz":response.questions}
+    response  = structured_llm.invoke([system_message , human_message] + state.get("messages")) # type: ignore
+  return {"quiz":response.questions} # type: ignore
 
 
 
