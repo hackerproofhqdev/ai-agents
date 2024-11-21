@@ -79,7 +79,7 @@ class Resume(BaseModel):
     education_info: Optional[list[Education]] = Field(description="Education Info")
     contact_info: Contact = Field(description="Contact Information")
     certifications: Optional[list[Certification]] = Field(description="Certifications")
-    projects: list[Projects]
+    projects: list[Projects] = Field(description="Projet List")
     awards: Optional[list[Awards]] = Field(description="List Of Awards")
 
 
