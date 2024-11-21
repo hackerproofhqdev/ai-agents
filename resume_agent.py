@@ -93,6 +93,7 @@ class ListProjects(BaseModel):
 
 class State(MessagesState):
     resume: Resume
+    about:str
     experience: List[PastExperience]
     projects: list[Projects]
     experience: list[PastExperience]
@@ -142,8 +143,7 @@ def profile_summary_agent(state: State):
     system_messages = ("system", system_message)
     messages = [system_messages] + state["messages"]
     response = llm.invoke(messages)
-    print(response.content)
-    return {"about": response}
+    return {"about": response.content}
 
 
 def llm_node(state: State):
