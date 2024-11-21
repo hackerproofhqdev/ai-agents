@@ -53,6 +53,13 @@ class Certification(BaseModel):
     issued_at: Optional[str] = Field(default=None, description="Date of Issue")
 
 
+class Projects(BaseModel):
+    project_name: str = Field(description="Project Name")
+    description: str = Field(
+        description="Explanation of How he Performed His Role What Work He have Done"
+    )
+
+
 class Awards(BaseModel):
     """Award Model"""
 
@@ -62,26 +69,33 @@ class Awards(BaseModel):
 class Resume(BaseModel):
     """Resume Model"""
 
-    name: str = Field(description="Name of the Resumer")
+    name: str = Field(description="Name of The Resumer")
     role: str = Field(description="Role of the Resumer")
     about: str = Field(description="Person About")
-    skills: List[Skills] = Field(description="List of Skills")
-    past_experience: Optional[List[PastExperience]] = Field(
-        default_factory=list, description="List of Experience Including Projects"
+    skills: list[Skills] = Field(description="List of Skills")
+    past_experince: Optional[list[PastExperience]] = Field(
+        description="List Of Experience Including Projects"
     )
-    education_info: Optional[List[Education]] = Field(description="Education Info")
+    education_info: Optional[list[Education]] = Field(description="Education Info")
     contact_info: Contact = Field(description="Contact Information")
-    certifications: Optional[List[Certification]] = Field(description="Certifications")
-    awards: Optional[List[Awards]] = Field(description="List of Awards")
+    certifications: Optional[list[Certification]] = Field(description="Certifications")
+    projects: list[Projects]
+    awards: Optional[list[Awards]] = Field(description="List Of Awards")
 
 
 class ListExperience(BaseModel):
-    experiences: List[PastExperience]
+    experiences: list[PastExperience]
+
+
+class ListProjects(BaseModel):
+    projects: list[Projects]
 
 
 class State(MessagesState):
     resume: Resume
     experience: List[PastExperience]
+    projects: list[Projects]
+    experience: list[PastExperience]
 
 
 llm_with_json = llm.with_structured_output(Resume)
@@ -89,19 +103,47 @@ llm_with_json = llm.with_structured_output(Resume)
 builder = StateGraph(State)
 
 
-def experience_generator_node(state: State):
+def experience_genrater_node(state: State):
     system_messages = """
     You are an AI Agent that generates experience according to Job Title and Job Description.
     Use valid company names. Avoid using "Personal Projects" or any other similar placeholders. Always prefer to generate a valid company name wherever applicable.
-    If a specific company name cannot be determined, use a well-known company, a relevant industry leader, or a suitable designation as needed. 
     Also, analyze the resume's target date and add experiences based on it.
+    Also Define that how user will peformed the Role in which Projects He work All of that
     Generate 10 experiences based on the Job Title, with valid company names included in each experience.
-    """
-    system_message = ("system", system_messages)
-    messages = [system_message] + state["messages"]
+"""
+
+    system_messages = ("system", system_messages)
+    messages = [system_messages] + state["messages"]
     structured_llm = llm.with_structured_output(ListExperience)
     response = structured_llm.invoke(messages)
     return {"experience": response.experiences}
+
+
+def project_agent(state: State):
+    system_message = """
+ou are an AI agent specializing in generating past work experiences tailored to a specific job title. Your task is to generate relevant and realistic projects associated with the given job title.
+
+Each project should have a valid and professional name that aligns with industry standards (avoid placeholders like 'XYZ' or 'ABC').
+Provide a detailed description of each project, focusing on:
+The user’s role and responsibilities within the project.
+Technologies, tools, or methodologies used.
+The impact or outcome of the project where applicable.
+Ensure the projects are highly relevant to the job title and highlight the user's expertise effectively.
+"""
+    system_messages = ("system", system_message)
+    messages = [system_messages] + state["messages"]
+    structured_llm = llm.with_structured_output(ListProjects)
+    response = structured_llm.invoke(messages)
+    return {"projects": response.projects}
+
+
+def profile_summary_agent(state: State):
+    system_message = "You are AI Agent that generate the profile summary according to the job requriement . Build profile section according to the job title . Just Take Experience user have and add it into your"
+    system_messages = ("system", system_message)
+    messages = [system_messages] + state["messages"]
+    response = llm.invoke(messages)
+    print(response.content)
+    return {"about": response}
 
 
 def llm_node(state: State):
@@ -150,10 +192,13 @@ Generate an updated resume that incorporates all the above requirements. The res
 
 
 builder.add_node("llm_node", llm_node)
-builder.add_node("experience_node", experience_generator_node)
-
-builder.add_edge(START, "experience_node")
-builder.add_edge("experience_node", "llm_node")
+builder.add_node("experince_agent", experience_genrater_node)
+builder.add_node("project_agent", project_agent)
+builder.add_node("profile_summary_agent", profile_summary_agent)
+builder.add_edge(START, "experince_agent")
+builder.add_edge("experince_agent", "profile_summary_agent")
+builder.add_edge("profile_summary_agent", "project_agent")
+builder.add_edge("project_agent", "llm_node")
 builder.add_edge("llm_node", END)
 
 graph = builder.compile()
