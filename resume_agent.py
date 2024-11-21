@@ -182,13 +182,10 @@ Generate an updated resume that incorporates all the above requirements. The res
     )
 
     llm_with_json = llm.with_structured_output(Resume)
-    experience_message = (
-        "user",
-        f"Please add the following new experiences to the resume:\n{state['experience']}",
-    )
+    experience_message = ("user", f'Please add the following new experiences to the resume:\n{state["experience"]} \n And This Experience : \n {state["projects"]} and here is the profile summary too {state["about"]}')
     messages = [system_message] + state["messages"] + [experience_message]
     updated_resume = llm_with_json.invoke(messages)
-    return {"messages": messages, "resume": updated_resume}
+    return {"resume": updated_resume}
 
 
 builder.add_node("llm_node", llm_node)
