@@ -7,6 +7,7 @@ class QuestionModel(BaseModel):
     """Question Model"""
     question : str = Field(description="Quiz Question")
     answer : str = Field(description="Correct answer of the question")
+    detail :  str = Field(description="Detail Description of why this answer is correct")
     options : list[str] = Field(description="Options to choose from")
 
 class QuizModel(BaseModel):
