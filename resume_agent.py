@@ -58,6 +58,9 @@ class Projects(BaseModel):
     description: str = Field(
         description="Explanation of How he Performed His Role What Work He have Done"
     )
+    company_name : str = Field(
+        description="Name Of The Company"
+    )
 
 
 class Awards(BaseModel):
@@ -130,6 +133,7 @@ The user’s role and responsibilities within the project.
 Technologies, tools, or methodologies used.
 The impact or outcome of the project where applicable.
 Ensure the projects are highly relevant to the job title and highlight the user's expertise effectively.
+Also Add The Company Name.
 """
     system_messages = ("system", system_message)
     messages = [system_messages] + state["messages"]
